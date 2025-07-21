@@ -1,14 +1,37 @@
-import { join } from 'path'
+import https from 'https'
 import dotenv from 'dotenv'
+import { join } from 'path'
+
 import { createBot, createProvider, createFlow, addKeyword, utils } from '@builderbot/bot'
 import { MysqlAdapter as Database } from '@builderbot/database-mysql'
 import { BaileysProvider as Provider } from '@builderbot/provider-baileys'
 
 dotenv.config()
-
-
 const PORT = process.env.PORT ?? 3008
 
+const options = {
+    port: 443,
+    path: '/',
+    method: 'GET',
+    hostname: process.env.APP_URL,
+};
+
+function pingServer() {
+    const req = https.request(options, (res) => {
+        if (res.statusCode === 200) {
+            console.log('Ping successful at', new Date().toISOString());
+        } else {
+            console.error('Ping failed with status:', res.statusCode);
+        }
+        res.on('data', () => { });
+    });
+
+    req.on('error', (e) => {
+        console.error('Error pinging server:', e);
+    });
+
+    req.end();
+}
 
 
 const discordFlow = addKeyword<Provider, Database>('doc').addAnswer(
@@ -65,6 +88,9 @@ const fullSamplesFlow = addKeyword<Provider, Database>(['samples', utils.setEven
     })
 
 const main = async () => {
+    setInterval(pingServer, 300000);
+    pingServer();
+
     const adapterFlow = createFlow([welcomeFlow, registerFlow, fullSamplesFlow])
 
     const adapterProvider = createProvider(Provider)

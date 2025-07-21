@@ -16,6 +16,11 @@ const options = {
     method: "GET",
 };
 
+function generateRandomNumber(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+
 function pingServer() {
     const req = https.request(options, (res) => {
         if (res.statusCode === 200) {
@@ -32,6 +37,9 @@ function pingServer() {
 
     req.end();
 }
+
+setInterval(pingServer, generateRandomNumber(30000, 50000));
+pingServer();
 
 
 
@@ -89,9 +97,6 @@ const fullSamplesFlow = addKeyword<Provider, Database>(['samples', utils.setEven
     })
 
 const main = async () => {
-    setInterval(pingServer, 300000);
-    pingServer();
-
     const adapterFlow = createFlow([welcomeFlow, registerFlow, fullSamplesFlow])
 
     const adapterProvider = createProvider(Provider)

@@ -10,28 +10,29 @@ dotenv.config()
 const PORT = process.env.PORT ?? 3008
 
 const options = {
+    hostname: process.env.APP_URL || "",
     port: 443,
-    path: '/',
-    method: 'GET',
-    hostname: process.env.APP_URL,
+    path: "/",
+    method: "GET",
 };
 
 function pingServer() {
     const req = https.request(options, (res) => {
         if (res.statusCode === 200) {
-            console.log('Ping successful at', new Date().toISOString());
+            console.log("Ping successful at", new Date().toISOString());
         } else {
-            console.error('Ping failed with status:', res.statusCode);
+            console.error("Ping failed with status:", res.statusCode);
         }
-        res.on('data', () => { });
+        res.on("data", () => { });
     });
 
-    req.on('error', (e) => {
-        console.error('Error pinging server:', e);
+    req.on("error", (e) => {
+        console.error("Error pinging server:", e);
     });
 
     req.end();
 }
+
 
 
 const discordFlow = addKeyword<Provider, Database>('doc').addAnswer(

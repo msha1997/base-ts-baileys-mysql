@@ -92,78 +92,82 @@ const fullSamplesFlow = addKeyword<Provider, Database>(['samples', utils.setEven
     })
 
 const main = async () => {
-    const adapterFlow = createFlow([welcomeFlow, registerFlow, fullSamplesFlow])
+    try {
+        const adapterFlow = createFlow([welcomeFlow, registerFlow, fullSamplesFlow])
 
-    const adapterProvider = createProvider(Provider)
-    const adapterDB = new Database({
-        host: process.env.MYSQL_DB_HOST,
-        user: process.env.MYSQL_DB_USER,
-        database: process.env.MYSQL_DB_NAME,
-        password: process.env.MYSQL_DB_PASSWORD,
-        port: Number(process.env.MYSQL_DB_PORT) || 3306,
-    });
+        const adapterProvider = createProvider(Provider)
+        const adapterDB = new Database({
+            host: process.env.MYSQL_DB_HOST,
+            user: process.env.MYSQL_DB_USER,
+            database: process.env.MYSQL_DB_NAME,
+            password: process.env.MYSQL_DB_PASSWORD,
+            port: Number(process.env.MYSQL_DB_PORT) || 3306,
+        });
 
-    const { handleCtx, httpServer } = await createBot({
-        flow: adapterFlow,
-        provider: adapterProvider,
-        database: adapterDB,
-    })
-
-    adapterProvider.on('ready', () => {
-        setInterval(pingServer, generateRandomNumber(30000, 50000));
-
-        // Keep-alive mechanism
-        const recipientJid = `${process.env.PHONE_NUMBER}@s.whatsapp.net`;
-        setInterval(async () => {
-            try {
-                await adapterProvider.sendText(recipientJid, 'Keep-alive message');
-                console.log('Keep-alive message sent at', new Date().toISOString());
-            } catch (error) {
-                console.error('Error sending keep-alive message:', error);
-            }
-        }, generateRandomNumber(900000, 1800000));
-    })
-
-    adapterProvider.server.post(
-        '/v1/messages',
-        handleCtx(async (bot, req, res) => {
-            const { number, message, urlMedia } = req.body
-            await bot.sendMessage(number, message, { media: urlMedia ?? null })
-            return res.end('sended')
+        const { handleCtx, httpServer } = await createBot({
+            flow: adapterFlow,
+            provider: adapterProvider,
+            database: adapterDB,
         })
-    )
 
-    adapterProvider.server.post(
-        '/v1/register',
-        handleCtx(async (bot, req, res) => {
-            const { number, name } = req.body
-            await bot.dispatch('REGISTER_FLOW', { from: number, name })
-            return res.end('trigger')
+        adapterProvider.on('ready', () => {
+            setInterval(pingServer, generateRandomNumber(30000, 50000));
+
+            // Keep-alive mechanism
+            const recipientJid = `${process.env.PHONE_NUMBER}@s.whatsapp.net`;
+            setInterval(async () => {
+                try {
+                    await adapterProvider.sendText(recipientJid, 'Keep-alive message');
+                    console.log('Keep-alive message sent at', new Date().toISOString());
+                } catch (error) {
+                    console.error('Error sending keep-alive message:', error);
+                }
+            }, generateRandomNumber(900000, 1800000));
         })
-    )
 
-    adapterProvider.server.post(
-        '/v1/samples',
-        handleCtx(async (bot, req, res) => {
-            const { number, name } = req.body
-            await bot.dispatch('SAMPLES', { from: number, name })
-            return res.end('trigger')
-        })
-    )
+        adapterProvider.server.post(
+            '/v1/messages',
+            handleCtx(async (bot, req, res) => {
+                const { number, message, urlMedia } = req.body
+                await bot.sendMessage(number, message, { media: urlMedia ?? null })
+                return res.end('sended')
+            })
+        )
 
-    adapterProvider.server.post(
-        '/v1/blacklist',
-        handleCtx(async (bot, req, res) => {
-            const { number, intent } = req.body
-            if (intent === 'remove') bot.blacklist.remove(number)
-            if (intent === 'add') bot.blacklist.add(number)
+        adapterProvider.server.post(
+            '/v1/register',
+            handleCtx(async (bot, req, res) => {
+                const { number, name } = req.body
+                await bot.dispatch('REGISTER_FLOW', { from: number, name })
+                return res.end('trigger')
+            })
+        )
 
-            res.writeHead(200, { 'Content-Type': 'application/json' })
-            return res.end(JSON.stringify({ status: 'ok', number, intent }))
-        })
-    )
+        adapterProvider.server.post(
+            '/v1/samples',
+            handleCtx(async (bot, req, res) => {
+                const { number, name } = req.body
+                await bot.dispatch('SAMPLES', { from: number, name })
+                return res.end('trigger')
+            })
+        )
 
-    httpServer(+PORT)
+        adapterProvider.server.post(
+            '/v1/blacklist',
+            handleCtx(async (bot, req, res) => {
+                const { number, intent } = req.body
+                if (intent === 'remove') bot.blacklist.remove(number)
+                if (intent === 'add') bot.blacklist.add(number)
+
+                res.writeHead(200, { 'Content-Type': 'application/json' })
+                return res.end(JSON.stringify({ status: 'ok', number, intent }))
+            })
+        )
+
+        httpServer(+PORT)
+    } catch (error) {
+        console.error('Error in main:', error);
+    }
 }
 
 main()

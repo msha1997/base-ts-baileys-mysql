@@ -6,7 +6,7 @@ import { createBot, createProvider, createFlow, addKeyword, utils } from '@build
 import { MysqlAdapter as Database } from '@builderbot/database-mysql'
 import { BaileysProvider as Provider } from '@builderbot/provider-baileys'
 
-dotenv.config()
+dotenv.config({ path: '.env' })
 const PORT = process.env.PORT ?? 3008
 
 const options = {

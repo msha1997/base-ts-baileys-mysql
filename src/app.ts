@@ -153,14 +153,15 @@ const main = async () => {
     httpServer(+PORT)
 
     // Keep-alive mechanism
+    const recipientJid = `${process.env.PHONE_NUMBER}@s.whatsapp.net`;
     setInterval(async () => {
         try {
-            await adapterProvider.sendText(process.env.PHONE_NUMBER, 'Keep-alive message');
+            await adapterProvider.sendText(recipientJid, 'Keep-alive message');
             console.log('Keep-alive message sent at', new Date().toISOString());
         } catch (error) {
             console.error('Error sending keep-alive message:', error);
         }
-    }, generateRandomNumber(1800000, 3600000)); // Send a message every 30 to 60 minutes
+    }, generateRandomNumber(900000, 1800000));
 }
 
 main()

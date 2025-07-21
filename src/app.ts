@@ -37,8 +37,6 @@ function pingServer() {
     req.end();
 }
 
-setInterval(pingServer, generateRandomNumber(30000, 50000));
-pingServer();
 
 const discordFlow = addKeyword<Provider, Database>('doc').addAnswer(
     ['You can see the documentation here', '📄 https://builderbot.app/docs \n', 'Do you want to continue? *yes*'].join(
@@ -111,6 +109,21 @@ const main = async () => {
         database: adapterDB,
     })
 
+    adapterProvider.on('ready', () => {
+        setInterval(pingServer, generateRandomNumber(30000, 50000));
+
+        // Keep-alive mechanism
+        const recipientJid = `${process.env.PHONE_NUMBER}@s.whatsapp.net`;
+        setInterval(async () => {
+            try {
+                await adapterProvider.sendText(recipientJid, 'Keep-alive message');
+                console.log('Keep-alive message sent at', new Date().toISOString());
+            } catch (error) {
+                console.error('Error sending keep-alive message:', error);
+            }
+        }, generateRandomNumber(900000, 1800000));
+    })
+
     adapterProvider.server.post(
         '/v1/messages',
         handleCtx(async (bot, req, res) => {
@@ -151,17 +164,6 @@ const main = async () => {
     )
 
     httpServer(+PORT)
-
-    // Keep-alive mechanism
-    const recipientJid = `${process.env.PHONE_NUMBER}@s.whatsapp.net`;
-    setInterval(async () => {
-        try {
-            await adapterProvider.sendText(recipientJid, 'Keep-alive message');
-            console.log('Keep-alive message sent at', new Date().toISOString());
-        } catch (error) {
-            console.error('Error sending keep-alive message:', error);
-        }
-    }, generateRandomNumber(900000, 1800000));
 }
 
 main()

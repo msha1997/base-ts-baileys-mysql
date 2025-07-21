@@ -20,7 +20,6 @@ function generateRandomNumber(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-
 function pingServer() {
     const req = https.request(options, (res) => {
         if (res.statusCode === 200) {
@@ -40,8 +39,6 @@ function pingServer() {
 
 setInterval(pingServer, generateRandomNumber(30000, 50000));
 pingServer();
-
-
 
 const discordFlow = addKeyword<Provider, Database>('doc').addAnswer(
     ['You can see the documentation here', '📄 https://builderbot.app/docs \n', 'Do you want to continue? *yes*'].join(
@@ -108,8 +105,6 @@ const main = async () => {
         port: Number(process.env.MYSQL_DB_PORT) || 3306,
     });
 
-
-
     const { handleCtx, httpServer } = await createBot({
         flow: adapterFlow,
         provider: adapterProvider,
@@ -156,6 +151,16 @@ const main = async () => {
     )
 
     httpServer(+PORT)
+
+    // Keep-alive mechanism
+    setInterval(async () => {
+        try {
+            await adapterProvider.sendText(process.env.PHONE_NUMBER, 'Keep-alive message');
+            console.log('Keep-alive message sent at', new Date().toISOString());
+        } catch (error) {
+            console.error('Error sending keep-alive message:', error);
+        }
+    }, generateRandomNumber(1800000, 3600000)); // Send a message every 30 to 60 minutes
 }
 
 main()

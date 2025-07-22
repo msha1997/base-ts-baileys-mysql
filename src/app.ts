@@ -3,8 +3,8 @@ import dotenv from 'dotenv'
 import { join } from 'path'
 
 import { createBot, createProvider, createFlow, addKeyword, utils } from '@builderbot/bot'
-import { MysqlAdapter as Database } from '@builderbot/database-mysql'
 import { BaileysProvider as Provider } from '@builderbot/provider-baileys'
+import { MysqlAdapter as Database } from './MysqlAdapter'
 
 dotenv.config({ path: '.env' })
 const PORT = process.env.PORT ?? 3008

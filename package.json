@@ -15,7 +15,8 @@
     "@builderbot/bot": "1.2.9",
     "@builderbot/database-mysql": "1.2.9",
     "@builderbot/provider-baileys": "1.2.9",
-    "dotenv": "^17.2.0"
+    "dotenv": "^17.2.0",
+    "mysql2": "^3.14.2"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
